@@ -8,19 +8,34 @@ import { Box,
 import { useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmail } from "../components/EmailProtienContext";
+import emailjs from 'emailjs-com';
 
-
-//export const emailContext = createContext<string>("");
 
 export default function HomePage() {
     const navigate = useNavigate();
-    const { setEmail } = useEmail();
+    const { email, setEmail } = useEmail();
 
     const handleSubmit = async () => {
         navigate('/submit')
+        //e?.preventDefault();
+        sendEmail();
     };
-
     const [proteinSequence, setProteinSequence] = useState("");
+
+    function sendEmail() {
+        const templateParams = {
+            email: email,
+            protein_sequence: proteinSequence
+        };
+
+        emailjs.send('service_g6xd54r', 'template_05wvtnl', templateParams, 'TpxaKz1mUKkkrkpQ3')
+            .then((response) => {
+                console.log('Email sent successfully!', response.status, response.text);
+            })
+            .catch((err) => {
+                console.error('Failed to send email. Error: ', err);
+            });
+    }
 
     
 
@@ -40,6 +55,7 @@ export default function HomePage() {
             sx={{
                 my:2,
                 '& > :not(style)': { m: 0, width: '25ch' },
+                
             }}
             noValidate
             autoComplete="off"
@@ -77,8 +93,8 @@ export default function HomePage() {
 
             <Box sx = {{my: 2}}>
                 <Button onClick={() => {
-                    handleSubmit()
-                    }} variant="contained">Submit</Button>
+                handleSubmit()
+                }} variant="contained">Submit</Button>
             </Box>
             
             <Box sx = {{my: 2}}>
