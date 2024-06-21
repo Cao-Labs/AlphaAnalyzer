@@ -5,7 +5,7 @@ import { Box,
     TextField,
     Button } 
     from "@mui/material";
-import { useState} from "react";
+import { ChangeEvent, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmail } from "../components/EmailProtienContext";
 import emailjs from 'emailjs-com';
@@ -17,15 +17,16 @@ export default function HomePage() {
 
     const handleSubmit = async () => {
         navigate('/submit')
-        //e?.preventDefault();
         sendEmail();
     };
     const [proteinSequence, setProteinSequence] = useState("");
+    const [protienFile, setProtienFile] = useState<File | undefined>();
 
     function sendEmail() {
         const templateParams = {
             email: email,
-            protein_sequence: proteinSequence
+            protein_sequence: proteinSequence,
+            protien_file: protienFile
         };
 
         emailjs.send('service_g6xd54r', 'template_05wvtnl', templateParams, 'TpxaKz1mUKkkrkpQ3')
@@ -35,6 +36,13 @@ export default function HomePage() {
             .catch((err) => {
                 console.error('Failed to send email. Error: ', err);
             });
+    }
+
+    const handleOnChangeFile = (e: React.FormEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement & {
+            files: FileList;
+        }
+        setProtienFile(target.files[0]);
     }
 
     
@@ -61,7 +69,7 @@ export default function HomePage() {
             autoComplete="off"
             >
                 <TextField 
-                id="Email" 
+                id="email-form" 
                 label="Your Email Address" 
                 variant="outlined" 
                 placeholder={"results sent here"}
@@ -81,7 +89,7 @@ export default function HomePage() {
             autoComplete="off"
             >
                 <TextField
-                id="protien-form"
+                id="outlined-multiline-static"
                 label="Paste amino acid sequence here"
                 multiline
                 rows={8}
@@ -89,6 +97,13 @@ export default function HomePage() {
                 SATVSEINDTSVDJJHJKSHD"
                 onChange={(e) => setProteinSequence(e.target.value)}
                 />
+                <Typography>Or Choose File :</Typography>
+                <input type="file" 
+                onChange={e => handleOnChangeFile(e)}/>
+            </Box>
+
+            <Box sx = {{my: 2}}>
+                
             </Box>
 
             <Box sx = {{my: 2}}>
