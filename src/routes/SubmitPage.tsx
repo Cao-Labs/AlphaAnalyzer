@@ -5,7 +5,8 @@ import { useEmail } from "../components/EmailProtienContext";
 
 export default function SubmitPage() {
     const { email } = useEmail(); // Use the useEmail hook to get the email state
-    const currentTimestamp = dayjs();
+    const curDate = new Date();
+    
 
     return (
         <Container>
@@ -21,7 +22,7 @@ export default function SubmitPage() {
 
             <Box sx={{ my: 2 }}>
                 <Divider />
-                <Typography variant="h6">Date: {currentTimestamp.toString()}</Typography>
+                <Typography variant="h6">Date: {curDate.toLocaleTimeString([], {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'})}</Typography>
                 <Divider />
             </Box>
 
