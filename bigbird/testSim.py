@@ -1,5 +1,4 @@
 import csv
-import re
 from collections import defaultdict
 
 class GeneOntologyTree:
@@ -182,9 +181,9 @@ def propagate_to_root(go_tree, go_term, propagated_set):
 
 
 def main():
-    go_tree_path = '../../data/go.obo'
-    predictions_path = '../result/2all_cafa3_predicted.csv '
-    actual_path = '../result/2all_cafa3_predicted.csv'
+    go_tree_path = '/data/go.obo'
+    predictions_path = '/result/model6_predicted.csv'
+    actual_path = '/result/model6_actual.csv'
 
     go_tree = GeneOntologyTree(go_tree_path)
     predictions = load_predictions(predictions_path)

@@ -12,11 +12,10 @@ from tqdm import tqdm
 import re
 import csv
 
-# Load and preprocess data
 print("loading csv...")
-df = pd.read_csv('../combined_cafa_uni_train_data.csv')
-#df = df.sample(n=350000, random_state=42)
-go_terms = pd.read_csv('../../data/GOIDs.csv')
+df = pd.read_csv('/data/train_data.csv')
+df = df.sample(n=350000, random_state=42)
+go_terms = pd.read_csv('/data/GOIDs.csv')
 
 print("converting embeddings to list...")
 df['RoundedEmbedding'] = df['RoundedEmbedding'].apply(json.loads)
@@ -102,11 +101,11 @@ def train_model(model, train_dataloader, optimizer, criterion, scheduler, num_ep
 
 # Hyperparameters for different models
 hyperparameters = [
-    {'learning_rate': 1e-5, 'batch_size': 8, 'num_epochs': 3}
+    {'learning_rate': 1e-5, 'batch_size': 8, 'num_epochs': 5}
 ]
 
 models = []
-save_dir = '../saved_models/'
+save_dir = '/model/'
 os.makedirs(save_dir, exist_ok=True)
 
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
@@ -116,14 +115,13 @@ for i, params in enumerate(hyperparameters):
     model = CustomBigBirdModel(num_classes)
     optimizer = optim.Adam(model.parameters(), lr=params['learning_rate'])
     
-    # Adjust the scheduler parameters as needed
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, 
         'min', 
-        factor=0.5,  # Adjust this factor
-        patience=2,  # Adjust this patience
+        factor=0.5,
+        patience=2,
         verbose=True,
-        min_lr=1e-7  # Set a minimum learning rate
+        min_lr=1e-7
     )
     
     criterion = nn.BCEWithLogitsLoss()
