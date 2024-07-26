@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Divider, TextField, Button } from "@mui/material";
+import { Box, Typography, Divider, TextField, Button } from "@mui/material";
 import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmail } from "../components/EmailProtienContext";
@@ -37,16 +37,33 @@ export default function HomePage() {
     }
 
     return (
-        <Container fixed>
-            <Box gap={0} p={2} bgcolor={'#f5f5f5'} sx={{ my: 4 }} boxShadow={2}>
+        <Box 
+        alignItems={"center"}
+        my={4}
+        display={"flex"}
+        flexDirection={"column"}
+        >
+            <Box 
+            alignItems={"center"}
+            display={"flex"}
+            flexDirection={"column"}
+            sx={{width:'40%'}}
+            gap={0} p={2} 
+            bgcolor={'#f5f5f5'} 
+            marginBottom={2} 
+            boxShadow={2}>
                 <Typography variant="h3" gutterBottom>
                     PLU Protein Research
                     
                 </Typography>
-                <Divider />
+                <Divider sx={{width:'100%'}}/>
             </Box>
 
-            <Box gap={2} p={4} bgcolor={'#ffffff'} boxShadow={2} borderRadius={2}>
+            <Box 
+            sx={{height: 520, width: 700, my:2}}
+            gap={2} p={4} bgcolor={'#ffffff'} 
+            boxShadow={2} 
+            borderRadius={2}>
                 <Box
                     component="form"
                     sx={{
@@ -91,27 +108,42 @@ export default function HomePage() {
                     <input type="file" onChange={handleOnChangeFile} />
                 </Box>
 
-                <Box sx={{ my: 4}}>
-                    <Button onClick={handleSubmit} variant="contained">Submit</Button>
+                <Box sx={{ my: 4} }>
+                    <Button fullWidth onClick={handleSubmit} variant="contained">Submit</Button>
                 </Box>
             </Box>
 
-            <Box sx={{ my: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2, boxShadow: 1 }}>
-                <Box sx={{ my: 2 }}>
+            <Box
+            alignItems={'center'}
+            display={'flex'}
+            flexDirection={'column'}
+           
+            sx={{width: '95%', my:2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2, boxShadow: 1 }}>
+                <Box 
+                alignItems={'center'}
+                display={'flex'}
+                flexDirection={'column'}
+                 justifyContent={'center'}
+                 sx={{ my: 1 }}>
                     <Typography variant='h5'>Citation</Typography>
-                    <Divider />
+                    <Divider sx={{width:'100%'}} />
                     <Typography>Dr. Cao Renzhi</Typography>
                 </Box>
 
-                <Box sx={{ my: 2 }}>
+                <Box 
+                alignItems={'center'}
+                display={'flex'}
+                flexDirection={'column'}
+                 justifyContent={'center'}
+                 sx={{ my: 1 }}>
                     <Typography variant='h5'>Contact</Typography>
-                    <Divider />
+                    <Divider sx={{width:'100%'}} />
                     <Typography>If you have any questions, please contact:</Typography>
                     <Typography>Dr. Cao Renzhi</Typography>
                     <Typography>Department of Computer Science</Typography>
                     <Typography>Pacific Lutheran University</Typography>
                 </Box>
             </Box>
-        </Container>
+        </Box>
     );
 }
