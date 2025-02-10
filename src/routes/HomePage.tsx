@@ -1,149 +1,138 @@
-import { Box, Typography, Divider, TextField, Button } from "@mui/material";
+import { Box, Typography, Divider, Button, Container, Paper, Stack, CircularProgress } from "@mui/material";
 import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEmail } from "../components/EmailProtienContext";
-import emailjs from 'emailjs-com';
 
 export default function HomePage() {
     const navigate = useNavigate();
-    const { email, setEmail } = useEmail();
+    const [proteinFile, setProteinFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false); // Add loading state
 
     const handleSubmit = async () => {
-        navigate('/submit');
-        sendEmail();
-    };
-    const [proteinSequence, setProteinSequence] = useState("");
-    const [proteinFile, setProteinFile] = useState<File | undefined>();
+        if (!proteinFile) {
+            alert("Please select a file.");
+            return;
+        }
 
-    function sendEmail() {
-        const templateParams = {
-            email: email,
-            protein_sequence: proteinSequence,
-            protein_file: proteinFile
-        };
+        const formData = new FormData();
+        formData.append("file", proteinFile);
 
-        emailjs.send('service_g6xd54r', 'template_05wvtnl', templateParams, 'TpxaKz1mUKkkrkpQ3')
-            .then((response) => {
-                console.log('Email sent successfully!', response.status, response.text);
-            })
-            .catch((err) => {
-                console.error('Failed to send email. Error: ', err);
+        setLoading(true); // Set loading to true when submission starts
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/predict", {
+                method: "POST",
+                body: formData,
             });
-    }
+
+            const contentType = response.headers.get("content-type");
+            if (!response.ok) {
+                const errorText = contentType?.includes("application/json") 
+                    ? await response.json() 
+                    : await response.text();
+                throw new Error(`Server Error: ${JSON.stringify(errorText)}`);
+            }
+
+            const data = await response.json();
+            console.log("Predictions:", data);
+            navigate('/submit', { state: { results: data.predictions } });
+
+        } catch (error) {
+            console.error("Error submitting file:", error);
+            alert(`Submission failed: ${error.message}`);
+        } finally {
+            setLoading(false); // Reset loading state
+        }
+    };
 
     const handleOnChangeFile = (e: ChangeEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement & { files: FileList };
-        setProteinFile(target.files[0]);
-    }
+        const file = e.target.files?.[0] || null;
+        setProteinFile(file);
+    };
 
     return (
-        <Box 
-        alignItems={"center"}
-        my={4}
-        display={"flex"}
-        flexDirection={"column"}
-        >
-            <Box 
-            alignItems={"center"}
-            display={"flex"}
-            flexDirection={"column"}
-            sx={{width:'40%'}}
-            gap={0} p={2} 
-            bgcolor={'#f5f5f5'} 
-            marginBottom={2} 
-            boxShadow={2}>
-                <Typography variant="h3" gutterBottom>
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            <Paper elevation={3} sx={{ p: 4, mb: 4, textAlign: 'center', bgcolor: '#f5f5f5' }}>
+                <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold', color: '#2c3e50' }}>
                     PLU Protein Research
-                    
                 </Typography>
-                <Divider sx={{width:'100%'}}/>
-            </Box>
+                <Divider sx={{ width: '100%', my: 2 }} />
+            </Paper>
 
-            <Box 
-            sx={{height: 520, width: 700, my:2}}
-            gap={2} p={4} bgcolor={'#ffffff'} 
-            boxShadow={2} 
-            borderRadius={2}>
-                <Box
-                    component="form"
-                    sx={{
-                        my: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        //'& .MuiTextField-root': { my: 2, width: '100%' },
-                    }}
-                    noValidate
-                    autoComplete="off"
-                >
-                    <TextField
-                        id="email-form"
-                        label="Your Email Address"
-                        variant="outlined"
-                        placeholder="Results sent here"
-                        onChange={(e) => setEmail(e.target.value)}
-                        fullWidth
-                    />
-                </Box>
+            <Paper elevation={3} sx={{ p: 4, mb: 4, bgcolor: '#ffffff' }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: '#34495e' }}>
+                    Upload Your Protein File (CSV format)
+                </Typography>
+                <Stack spacing={3} sx={{ my: 2 }}>
+                    <Box
+                        component="form"
+                        sx={{
+                            '& .MuiTextField-root': { width: '100%' },
+                        }}
+                        noValidate
+                        autoComplete="off"
+                    >
+                        <input 
+                            type="file" 
+                            onChange={handleOnChangeFile} 
+                            style={{ display: 'none' }} 
+                            id="file-upload"
+                        />
+                        <label htmlFor="file-upload">
+                            <Button 
+                                variant="outlined" 
+                                component="span" 
+                                fullWidth 
+                                sx={{ py: 2, borderStyle: 'dashed', borderColor: '#bdc3c7', color: '#7f8c8d' }}
+                            >
+                                {proteinFile ? proteinFile.name : "Choose File"}
+                            </Button>
+                        </label>
+                    </Box>
 
-                <Box
-                    component="form"
-                    sx={{
-                        my: 2,
-                        '& .MuiTextField-root': { my: 2, width: '100%' },
-                    }}
-                    noValidate
-                    autoComplete="off"
-                >
-                    <TextField
-                        id="outlined-multiline-static"
-                        label="Paste amino acid sequence here"
-                        multiline
-                        rows={8}
-                        placeholder="ex. >Protein2\nSATVSEINDTSVDJJHJKSHD"
-                        onChange={(e) => setProteinSequence(e.target.value)}
-                        fullWidth
-                    />
-                    <Typography >Or Choose File :</Typography>
-                    <input type="file" onChange={handleOnChangeFile} />
-                </Box>
+                    <Button 
+                        fullWidth 
+                        onClick={handleSubmit} 
+                        variant="contained" 
+                        disabled={loading} // Disable button when loading
+                        sx={{ py: 2, bgcolor: '#3498db', '&:hover': { bgcolor: '#2980b9' } }}
+                    >
+                        {loading ? <CircularProgress size={24} sx={{ color: '#ffffff' }} /> : "Submit"}
+                    </Button>
+                </Stack>
+            </Paper>
 
-                <Box sx={{ my: 4} }>
-                    <Button fullWidth onClick={handleSubmit} variant="contained">Submit</Button>
-                </Box>
-            </Box>
+            <Paper elevation={3} sx={{ p: 4, bgcolor: '#f5f5f5' }}>
+                <Stack spacing={4}>
+                    <Box textAlign="center">
+                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: '#34495e' }}>
+                            Citation
+                        </Typography>
+                        <Divider sx={{ width: '100%', my: 2 }} />
+                        <Typography variant="body1" sx={{ color: '#7f8c8d' }}>
+                            Dr. Cao Renzhi
+                        </Typography>
+                    </Box>
 
-            <Box
-            alignItems={'center'}
-            display={'flex'}
-            flexDirection={'column'}
-           
-            sx={{width: '95%', my:2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2, boxShadow: 1 }}>
-                <Box 
-                alignItems={'center'}
-                display={'flex'}
-                flexDirection={'column'}
-                 justifyContent={'center'}
-                 sx={{ my: 1 }}>
-                    <Typography variant='h5'>Citation</Typography>
-                    <Divider sx={{width:'100%'}} />
-                    <Typography>Dr. Cao Renzhi</Typography>
-                </Box>
-
-                <Box 
-                alignItems={'center'}
-                display={'flex'}
-                flexDirection={'column'}
-                 justifyContent={'center'}
-                 sx={{ my: 1 }}>
-                    <Typography variant='h5'>Contact</Typography>
-                    <Divider sx={{width:'100%'}} />
-                    <Typography>If you have any questions, please contact:</Typography>
-                    <Typography>Dr. Cao Renzhi</Typography>
-                    <Typography>Department of Computer Science</Typography>
-                    <Typography>Pacific Lutheran University</Typography>
-                </Box>
-            </Box>
-        </Box>
+                    <Box textAlign="center">
+                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: '#34495e' }}>
+                            Contact
+                        </Typography>
+                        <Divider sx={{ width: '100%', my: 2 }} />
+                        <Typography variant="body1" sx={{ color: '#7f8c8d' }}>
+                            If you have any questions, please contact:
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#7f8c8d' }}>
+                            Dr. Cao Renzhi
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#7f8c8d' }}>
+                            Department of Computer Science
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#7f8c8d' }}>
+                            Pacific Lutheran University
+                        </Typography>
+                    </Box>
+                </Stack>
+            </Paper>
+        </Container>
     );
 }

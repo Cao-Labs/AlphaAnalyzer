@@ -1,33 +1,46 @@
-// SubmitPage.tsx
-import { Typography, Container, Box, Divider } from "@mui/material";
-import dayjs from "dayjs";
-import { useEmail } from "../components/EmailProtienContext";
+import { Box, Typography, Button, Container, Paper, Stack, List, ListItem, ListItemText } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function SubmitPage() {
-    const { email } = useEmail(); // Use the useEmail hook to get the email state
-    const curDate = new Date();
-    
+    const location = useLocation();
+    const navigate = useNavigate();
+    const results = location.state?.results || [];
 
     return (
-        <Container>
-            <Box sx={{ my: 4 }}>
-                <Typography variant="h3">PLU Protien Research</Typography>
-            </Box>
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            <Paper elevation={3} sx={{ p: 4, mb: 4, textAlign: 'center', bgcolor: '#f5f5f5' }}>
+                <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold', color: '#2c3e50' }}>
+                    Prediction Results
+                </Typography>
+            </Paper>
 
-            <Box sx={{ my: 2 }}>
-                <Divider />
-                <Typography variant="h6">Email: {email}</Typography>
-                <Divider />
-            </Box>
+            <Paper elevation={3} sx={{ p: 4, mb: 4, bgcolor: '#ffffff' }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: '#34495e', mb: 3 }}>
+                    Your Predictions
+                </Typography>
+                {results.length > 0 ? (
+                    <List sx={{ maxHeight: 300, overflow: 'auto', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                        {results.map((result: string, index: number) => (
+                            <ListItem key={index} sx={{ borderBottom: '1px solid #e0e0e0', '&:last-child': { borderBottom: 'none' } }}>
+                                <ListItemText primary={`Prediction ${index + 1}: ${result}`} />
+                            </ListItem>
+                        ))}
+                    </List>
+                ) : (
+                    <Typography variant="body1" sx={{ color: '#7f8c8d', textAlign: 'center' }}>
+                        No predictions available.
+                    </Typography>
+                )}
+            </Paper>
 
-            <Box sx={{ my: 2 }}>
-                <Divider />
-                <Typography variant="h6">Date: {curDate.toLocaleTimeString([], {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'})}</Typography>
-                <Divider />
-            </Box>
-
-            <Box sx={{ my: 2 }}>
-                <Typography fontWeight={'bold'}>Thank you for using this tool, your results will be sent to the email provided shortly.</Typography>
+            <Box textAlign="center">
+                <Button 
+                    variant="contained" 
+                    onClick={() => navigate("/")} 
+                    sx={{ py: 2, px: 4, bgcolor: '#3498db', '&:hover': { bgcolor: '#2980b9' } }}
+                >
+                    Back to Home
+                </Button>
             </Box>
         </Container>
     );
